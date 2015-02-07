@@ -8,4 +8,4 @@ Toujours un bug au niveau de la compilation (indépendant du code)
 Changement de solution => parser simple via org.w3c.dom
 
 Samedi 1h : premier commit pour afficher quelques élements dans une listview (titres, lien)
-
+Samedi 1h : ajout d'une nouvelle activité pour visualiser le contenu de chaque flux (stockage dans les préférences)
