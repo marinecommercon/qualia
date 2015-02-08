@@ -21,19 +21,17 @@ import java.util.ArrayList;
 
 public class MyParsingActivity extends ListActivity {
 
-    public static SQLiteDatabase db;
-    private DaoMaster daoMaster;
-    public static DaoSession daoSession;
-    public static RssDao rssDao;
-    public static LinkDao linkDao;
-
     //nodes
     static final String KEY_ITEM = "item";
     static final String KEY_LINK = "link";
     static final String KEY_TITLE = "title";
     static final String KEY_DESC = "description";
     static final String KEY_DATE = "pubDate";
-
+    public static SQLiteDatabase db;
+    public static DaoSession daoSession;
+    public static RssDao rssDao;
+    public static LinkDao linkDao;
+    private DaoMaster daoMaster;
     private Cursor cursor;
     private ArrayList<Link> listLink;
     private AdapterLink adapter;
@@ -48,17 +46,18 @@ public class MyParsingActivity extends ListActivity {
         initDB();
 
         //First time the user clicks on this rss : requests cursor is null. Add all items to the database
-        if(findLink(rssId) == 0){
+        if (findLink(rssId) == 0) {
 
-            if( isOnline() == false){
+            if (isOnline() == false) {
                 Toast.makeText(this, "Désolé, le contenu ne peut être chargé", Toast.LENGTH_SHORT).show();
                 finish();
-            }else {
+            } else {
                 addAllLink(rssId);
                 findLink(rssId);
             }
 
-        }else{}
+        } else {
+        }
 
         //Create the list with the cursor
         initList();
@@ -73,7 +72,7 @@ public class MyParsingActivity extends ListActivity {
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
 
-        Intent intent = new Intent(MyParsingActivity.this,ItemDetail.class);
+        Intent intent = new Intent(MyParsingActivity.this, ItemDetail.class);
         intent.putExtra("ID", (int) id);
         startActivity(intent);
     }
@@ -101,14 +100,14 @@ public class MyParsingActivity extends ListActivity {
         return cursor.getCount();
     }
 
-    private void addAllLink(int rssID){
+    private void addAllLink(int rssID) {
 
         Rss rssItem = MyParsingActivity.rssDao.queryBuilder()
                 .where(RssDao.Properties.Id.eq(rssID))
                 .unique();
 
         XMLParser parser = new XMLParser();
-        String xml = parser.getXmlFromUrl(""+rssItem.getName());
+        String xml = parser.getXmlFromUrl("" + rssItem.getName());
         Document doc = parser.getDocFromString(xml);
         NodeList nl = doc.getElementsByTagName(KEY_ITEM);
 
@@ -118,11 +117,11 @@ public class MyParsingActivity extends ListActivity {
             MyParsingActivity.db.beginTransaction();
 
             try {
-                MyParsingActivity.linkDao.insert(new Link(null, ""+parser.getValue(e, KEY_TITLE),
-                        ""+parser.getValue(e, KEY_DESC),
-                        ""+parser.getValue(e, KEY_LINK),
-                        ""+parser.getValue(e, KEY_DATE),
-                         rssID));
+                MyParsingActivity.linkDao.insert(new Link(null, "" + parser.getValue(e, KEY_TITLE),
+                        "" + parser.getValue(e, KEY_DESC),
+                        "" + parser.getValue(e, KEY_LINK),
+                        "" + parser.getValue(e, KEY_DATE),
+                        rssID));
                 MyParsingActivity.db.setTransactionSuccessful();
             } finally {
                 MyParsingActivity.db.endTransaction();
@@ -130,7 +129,7 @@ public class MyParsingActivity extends ListActivity {
         }
     }
 
-    private void initList(){
+    private void initList() {
 
         listLink = new ArrayList<Link>();
         if (cursor.moveToFirst()) {
@@ -154,9 +153,6 @@ public class MyParsingActivity extends ListActivity {
         db.close();
         super.onDestroy();
     }
-
-
-
 
 
 }

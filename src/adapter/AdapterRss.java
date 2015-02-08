@@ -13,55 +13,55 @@ import java.util.List;
 
 public class AdapterRss extends BaseAdapter {
 
-	List<Rss> listRss;
-	LayoutInflater inflater;
+    List<Rss> listRss;
+    LayoutInflater inflater;
 
-	public AdapterRss(Context context, List<Rss> listRss) {
+    public AdapterRss(Context context, List<Rss> listRss) {
 
-		inflater = LayoutInflater.from(context);
-		this.listRss = listRss;
+        inflater = LayoutInflater.from(context);
+        this.listRss = listRss;
 
-	}
+    }
 
-	@Override
-	public int getCount() {
-		return listRss.size();
-	}
+    @Override
+    public int getCount() {
+        return listRss.size();
+    }
 
-	@Override
-	public Object getItem(int position) {
-		return listRss.get(position);
-	}
+    @Override
+    public Object getItem(int position) {
+        return listRss.get(position);
+    }
 
-	@Override
-	public long getItemId(int position) {
-		return listRss.get(position).getId();
-	}
+    @Override
+    public long getItemId(int position) {
+        return listRss.get(position).getId();
+    }
 
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
 
-		ViewHolder holder;
+        ViewHolder holder;
 
-		if (convertView == null) {
+        if (convertView == null) {
 
-			holder = new ViewHolder();
-			convertView = inflater.inflate(R.layout.adapter_item, null);
-			holder.rss_title = (TextView) convertView.findViewById(R.id.adapter_title);
-			convertView.setTag(holder);
+            holder = new ViewHolder();
+            convertView = inflater.inflate(R.layout.adapter_item, null);
+            holder.rss_title = (TextView) convertView.findViewById(R.id.adapter_title);
+            convertView.setTag(holder);
 
-		} else {
-			holder = (ViewHolder) convertView.getTag();
-		}
+        } else {
+            holder = (ViewHolder) convertView.getTag();
+        }
 
-		holder.rss_title.setText(listRss.get(position).getName());
+        holder.rss_title.setText(listRss.get(position).getName());
 
-		return convertView;
+        return convertView;
 
-	}
+    }
 
-	private class ViewHolder {
-		TextView rss_title;
+    private class ViewHolder {
+        TextView rss_title;
     }
 
 }

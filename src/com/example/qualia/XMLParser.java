@@ -25,75 +25,75 @@ import java.io.UnsupportedEncodingException;
 public class XMLParser {
 
     public XMLParser() {
-	}
+    }
 
 
-	public String getXmlFromUrl(String url) {
-		String xml = null;
+    public String getXmlFromUrl(String url) {
+        String xml = null;
 
-		try {
-			// Mofification (UTF-8)
+        try {
+            // Mofification (UTF-8)
 
-			DefaultHttpClient httpClient = new DefaultHttpClient();
-			HttpPost          httpPost   = new HttpPost(url);
+            DefaultHttpClient httpClient = new DefaultHttpClient();
+            HttpPost httpPost = new HttpPost(url);
 
-			HttpResponse httpResponse = httpClient.execute(httpPost);
-			HttpEntity   httpEntity     = httpResponse.getEntity();
+            HttpResponse httpResponse = httpClient.execute(httpPost);
+            HttpEntity httpEntity = httpResponse.getEntity();
 
             xml = EntityUtils.toString(httpEntity, HTTP.UTF_8);
 
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (ClientProtocolException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return xml;
-	}
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (ClientProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return xml;
+    }
 
-	public Document getDocFromString(String xml){
-		Document doc = null;
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		try {
+    public Document getDocFromString(String xml) {
+        Document doc = null;
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        try {
             DocumentBuilder db = dbf.newDocumentBuilder();
 
-			InputSource is = new InputSource();
-		        is.setCharacterStream(new StringReader(xml));
-		        doc = db.parse(is); 
+            InputSource is = new InputSource();
+            is.setCharacterStream(new StringReader(xml));
+            doc = db.parse(is);
 
-			} catch (ParserConfigurationException e) {
-				Log.e("Error: ", e.getMessage());
-				return null;
-			} catch (SAXException e) {
-				Log.e("Error: ", e.getMessage());
-	            return null;
-			} catch (IOException e) {
-				Log.e("Error: ", e.getMessage());
-				return null;
-			}
+        } catch (ParserConfigurationException e) {
+            Log.e("Error: ", e.getMessage());
+            return null;
+        } catch (SAXException e) {
+            Log.e("Error: ", e.getMessage());
+            return null;
+        } catch (IOException e) {
+            Log.e("Error: ", e.getMessage());
+            return null;
+        }
 
-	        return doc;
-	}
-
-
-	 public final String getElementValue( Node elem ) {
-	     Node child;
-	     if( elem != null){
-	         if (elem.hasChildNodes()){
-	             for( child = elem.getFirstChild(); child != null; child = child.getNextSibling() ){
-	                 if( child.getNodeType() == Node.TEXT_NODE  ){
-	                     return child.getNodeValue();
-	                 }
-	             }
-	         }
-	     }
-	     return "";
-	 }
+        return doc;
+    }
 
 
-	 public String getValue(Element item, String str) {
-			NodeList n = item.getElementsByTagName(str);
-			return this.getElementValue(n.item(0));
-		}
+    public final String getElementValue(Node elem) {
+        Node child;
+        if (elem != null) {
+            if (elem.hasChildNodes()) {
+                for (child = elem.getFirstChild(); child != null; child = child.getNextSibling()) {
+                    if (child.getNodeType() == Node.TEXT_NODE) {
+                        return child.getNodeValue();
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+
+    public String getValue(Element item, String str) {
+        NodeList n = item.getElementsByTagName(str);
+        return this.getElementValue(n.item(0));
+    }
 }

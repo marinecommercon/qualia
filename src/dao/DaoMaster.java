@@ -11,60 +11,59 @@ import de.greenrobot.dao.IdentityScopeType;
 
 
 public class DaoMaster extends AbstractDaoMaster {
-	public static final int SCHEMA_VERSION = 10;
+    public static final int SCHEMA_VERSION = 10;
 
 
-	public static void createAllTables(SQLiteDatabase db, boolean ifNotExists) {
-		LinkDao.createTable(db, ifNotExists);
-		RssDao.createTable(db, ifNotExists);
-	}
+    public DaoMaster(SQLiteDatabase db) {
+        super(db, SCHEMA_VERSION);
+        registerDaoClass(LinkDao.class);
+        registerDaoClass(RssDao.class);
+    }
 
+    public static void createAllTables(SQLiteDatabase db, boolean ifNotExists) {
+        LinkDao.createTable(db, ifNotExists);
+        RssDao.createTable(db, ifNotExists);
+    }
 
-	public static void dropAllTables(SQLiteDatabase db, boolean ifExists) {
-		LinkDao.dropTable(db, ifExists);
-		RssDao.dropTable(db, ifExists);
-	}
+    public static void dropAllTables(SQLiteDatabase db, boolean ifExists) {
+        LinkDao.dropTable(db, ifExists);
+        RssDao.dropTable(db, ifExists);
+    }
 
-	public static abstract class OpenHelper extends SQLiteOpenHelper {
+    public DaoSession newSession() {
+        return new DaoSession(db, IdentityScopeType.Session, daoConfigMap);
+    }
 
-		public OpenHelper(Context context, String name, CursorFactory factory) {
-			super(context, name, factory, SCHEMA_VERSION);
-		}
+    public DaoSession newSession(IdentityScopeType type) {
+        return new DaoSession(db, type, daoConfigMap);
+    }
 
-		@Override
-		public void onCreate(SQLiteDatabase db) {
-			Log.i("greenDAO", "Creating tables for schema version "
-					+ SCHEMA_VERSION);
-			createAllTables(db, false);
-		}
-	}
+    public static abstract class OpenHelper extends SQLiteOpenHelper {
+
+        public OpenHelper(Context context, String name, CursorFactory factory) {
+            super(context, name, factory, SCHEMA_VERSION);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            Log.i("greenDAO", "Creating tables for schema version "
+                    + SCHEMA_VERSION);
+            createAllTables(db, false);
+        }
+    }
 
     public static class DevOpenHelper extends OpenHelper {
-		public DevOpenHelper(Context context, String name, CursorFactory factory) {
-			super(context, name, factory);
-		}
+        public DevOpenHelper(Context context, String name, CursorFactory factory) {
+            super(context, name, factory);
+        }
 
-		@Override
-		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-			Log.i("greenDAO", "Upgrading schema from version " + oldVersion
-					+ " to " + newVersion + " by dropping all tables");
-			dropAllTables(db, true);
-			onCreate(db);
-		}
-	}
-
-	public DaoMaster(SQLiteDatabase db) {
-		super(db, SCHEMA_VERSION);
-		registerDaoClass(LinkDao.class);
-		registerDaoClass(RssDao.class);
-	}
-
-	public DaoSession newSession() {
-		return new DaoSession(db, IdentityScopeType.Session, daoConfigMap);
-	}
-
-	public DaoSession newSession(IdentityScopeType type) {
-		return new DaoSession(db, type, daoConfigMap);
-	}
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            Log.i("greenDAO", "Upgrading schema from version " + oldVersion
+                    + " to " + newVersion + " by dropping all tables");
+            dropAllTables(db, true);
+            onCreate(db);
+        }
+    }
 
 }

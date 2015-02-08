@@ -26,12 +26,11 @@ import java.util.TimerTask;
 public class MainActivity extends ListActivity {
 
 
-    private MyDatabase dbImp;
     public static SQLiteDatabase db;
-    private DaoMaster daoMaster;
     public static DaoSession daoSession;
     public static RssDao rssDao;
-
+    private MyDatabase dbImp;
+    private DaoMaster daoMaster;
     private ArrayList<Rss> listRss;
     private Cursor cursor;
     private AdapterRss adapter;
@@ -39,11 +38,10 @@ public class MainActivity extends ListActivity {
     private Timer myTimer;
 
 
-
     @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.main_activity);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main_activity);
 
 
         //Add rss as Strings
@@ -60,10 +58,11 @@ public class MainActivity extends ListActivity {
 
 
         //First run : requests cursor is null. Add all items to the database
-        if(findRss() == 0){
+        if (findRss() == 0) {
             addAllRss(rssItems);
             findRss();
-        }else{}
+        } else {
+        }
 
         //Create the list with the cursor
         initList();
@@ -80,7 +79,7 @@ public class MainActivity extends ListActivity {
         Toast.makeText(this, "Chargement", Toast.LENGTH_SHORT).show();
         myTimer = new Timer();
         id = listRss.get(position).getId();
-        final Intent intent = new Intent(MainActivity.this,MyParsingActivity.class);
+        final Intent intent = new Intent(MainActivity.this, MyParsingActivity.class);
         intent.putExtra("ID", (int) id);
 
         myTimer.schedule(new TimerTask() {
@@ -104,11 +103,11 @@ public class MainActivity extends ListActivity {
     }
 
 
-    private void addAllRss(List<String> rssItems){
+    private void addAllRss(List<String> rssItems) {
 
         MainActivity.rssDao.deleteAll();
 
-        for (int i = 0 ; i < rssItems.size() ; i++) {
+        for (int i = 0; i < rssItems.size(); i++) {
 
             MainActivity.db.beginTransaction();
             try {
@@ -132,7 +131,7 @@ public class MainActivity extends ListActivity {
         return cursor.getCount();
     }
 
-    private void initList(){
+    private void initList() {
 
         listRss = new ArrayList<Rss>();
         if (cursor.moveToFirst()) {
@@ -142,7 +141,6 @@ public class MainActivity extends ListActivity {
         }
         cursor.close();
     }
-
 
 
     @Override
