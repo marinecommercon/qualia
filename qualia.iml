@@ -15,5 +15,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="android-sqlite-asset-helper" level="project" />
+    <orderEntry type="library" name="android-sqlite-asset-helper (2)" level="project" />
   </component>
 </module>
