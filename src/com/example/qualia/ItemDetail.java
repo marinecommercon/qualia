@@ -8,18 +8,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import dao.Link;
+import dao.LinkDao;
 
 /**
  * Created by Marine on 07/02/2015.
  */
 public class ItemDetail extends Activity {
-
-    private SharedPreferences preferences;
-
-    private String title;
-    private String link;
-    private String desc;
-    private String date;
 
     private TextView textview_title;
     private TextView textview_date;
@@ -32,22 +27,20 @@ public class ItemDetail extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.item_detail);
 
-        preferences = getApplicationContext().getSharedPreferences("READ_ITEMS", 0);
-        int position = this.getIntent().getIntExtra("POS", 0);
+        int linkId = this.getIntent().getIntExtra("ID", 0);
 
-        title = preferences.getString("TITLE_" + position, "");
-        link = preferences.getString("LINK_" + position, "");
-        desc = preferences.getString("DESC_" + position, "");
-        date = preferences.getString("DATE_" + position, "");
+        final Link linkItem = MyParsingActivity.linkDao.queryBuilder()
+                .where(LinkDao.Properties.Id.eq(linkId))
+                .unique();
 
         textview_title = (TextView) findViewById(R.id.detail_title);
         textview_date = (TextView) findViewById(R.id.detail_date);
         textview_desc = (TextView) findViewById(R.id.detail_desc);
         button_link = (Button) findViewById(R.id.detail_link);
 
-        textview_title.setText("" + title);
-        textview_date.setText("" + date);
-        textview_desc.setText("" + desc);
+        textview_title.setText("" + linkItem.getTitle());
+        textview_date.setText("" + linkItem.getDate());
+        textview_desc.setText("" + linkItem.getDesc());
 
 
         button_link.setOnClickListener(new View.OnClickListener() {
@@ -55,7 +48,7 @@ public class ItemDetail extends Activity {
             @Override
             public void onClick(View v) {
 
-                String url = "" + link;
+                String url = "" + linkItem.getLink();
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
                 startActivity(i);

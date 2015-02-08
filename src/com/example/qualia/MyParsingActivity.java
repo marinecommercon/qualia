@@ -1,35 +1,31 @@
 package com.example.qualia;
 
+import adapter.AdapterLink;
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.Toast;
 import dao.*;
-import database.MyDatabase;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class MyParsingActivity extends ListActivity {
 
-    private MyDatabase dbImp;
     public static SQLiteDatabase db;
     private DaoMaster daoMaster;
     public static DaoSession daoSession;
     public static RssDao rssDao;
     public static LinkDao linkDao;
-
-    static final String URL = "http://www.lemonde.fr/videos/rss_full.xml";
 
     //nodes
     static final String KEY_ITEM = "item";
@@ -39,18 +35,52 @@ public class MyParsingActivity extends ListActivity {
     static final String KEY_DATE = "pubDate";
 
     private Cursor cursor;
-    private SharedPreferences preferences;
+    private ArrayList<Link> listLink;
+    private AdapterLink adapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.my_parsing_activity);
 
-        preferences =  getApplicationContext().getSharedPreferences("READ_ITEMS", 0);
+        int rssId = this.getIntent().getIntExtra("ID", 0);
 
-        ArrayList<HashMap<String, String>> menuItems = new ArrayList<HashMap<String, String>>();
+        initDB();
 
-        importBdd();
+        //First time the user clicks on this rss : requests cursor is null. Add all items to the database
+        if(findLink(rssId) == 0){
+
+            if( isOnline() == false){
+                Toast.makeText(this, "Désolé, le contenu ne peut être chargé", Toast.LENGTH_SHORT).show();
+                finish();
+            }else {
+                addAllLink(rssId);
+                findLink(rssId);
+            }
+
+        }else{}
+
+        //Create the list with the cursor
+        initList();
+
+        //Show the list
+        adapter = new AdapterLink(this, listLink);
+        setListAdapter(adapter);
+
+    }
+
+
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+
+        Intent intent = new Intent(MyParsingActivity.this,ItemDetail.class);
+        intent.putExtra("ID", (int) id);
+        startActivity(intent);
+    }
+
+
+    private void initDB() {
+
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "qualiadb", null);
         db = helper.getWritableDatabase();
 
@@ -59,106 +89,63 @@ public class MyParsingActivity extends ListActivity {
         daoSession = daoMaster.newSession();
         rssDao = MyParsingActivity.daoSession.getRssDao();
         linkDao = MyParsingActivity.daoSession.getLinkDao();
+    }
 
-        long iD_rss = 0;
+    private int findLink(int rssId) {
 
-
-        MyParsingActivity.db.beginTransaction();
-        try {
-            iD_rss = MyParsingActivity.rssDao.insert(new Rss(null, "mon premier rss"));
-            MyParsingActivity.linkDao.insert(new Link(null, "link 1", null, null, null, iD_rss));
-            MyParsingActivity.linkDao.insert(new Link(null, "link 2", null, null, null, iD_rss));
-            MyParsingActivity.linkDao.insert(new Link(null, "link 3", null, null, null, iD_rss));
-
-            MyParsingActivity.db.setTransactionSuccessful();
-        } finally {
-            MyParsingActivity.db.endTransaction();
-        }
-
-        //find links
         String MY_QUERY;
-        MY_QUERY = "SELECT LINK._id " + "FROM LINK "
-                + "WHERE LINK._rssID = " + iD_rss ;
-
+        MY_QUERY = "SELECT LINK._id " + "FROM LINK"
+                + " WHERE LINK._rssId = " + rssId;
         cursor = MyParsingActivity.db.rawQuery(MY_QUERY, null);
 
-        if (cursor.moveToFirst()) {
-            do {
-                System.out.println(""+MyParsingActivity.linkDao.load((long) cursor.getInt(0)).getId());
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
+        return cursor.getCount();
+    }
 
+    private void addAllLink(int rssID){
 
+        Rss rssItem = MyParsingActivity.rssDao.queryBuilder()
+                .where(RssDao.Properties.Id.eq(rssID))
+                .unique();
 
-
-
-
-
-
-        // Parsing xml
         XMLParser parser = new XMLParser();
-        String xml = parser.getXmlFromUrl(URL);
+        String xml = parser.getXmlFromUrl(""+rssItem.getName());
         Document doc = parser.getDocFromString(xml);
-
         NodeList nl = doc.getElementsByTagName(KEY_ITEM);
 
         for (int i = 0; i < nl.getLength(); i++) {
 
-            HashMap<String, String> map = new HashMap<String, String>();
             Element e = (Element) nl.item(i);
+            MyParsingActivity.db.beginTransaction();
 
-            //Save results in the preferences
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("LINK_"+i, parser.getValue(e, KEY_LINK));
-            editor.putString("TITLE_"+i, parser.getValue(e, KEY_TITLE));
-            editor.putString("DESC_"+i, parser.getValue(e, KEY_DESC));
-            editor.putString("DATE_"+i, parser.getValue(e, KEY_DATE));
-            editor.commit();
-
-
-            // Add to the map for the listView
-             map.put(KEY_TITLE, parser.getValue(e, KEY_TITLE));
-             map.put(KEY_DESC, "" + parser.getValue(e, KEY_DESC).substring(0,100) + "...");
-             menuItems.add(map);
-        }
-
-
-        ListAdapter adapter = new SimpleAdapter(this, menuItems,R.layout.list_items,
-                new String[] {KEY_TITLE, KEY_DESC }, new int[] {
-                R.id.title, R.id.desc});
-
-        setListAdapter(adapter);
-        ListView lv = getListView();
-
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-
-                preferences =  getApplicationContext().getSharedPreferences("READ_ITEMS", 0);
-                Intent intent = new Intent(MyParsingActivity.this,ItemDetail.class);
-                intent.putExtra("POS", position);
-                startActivity(intent);
-
-
-
+            try {
+                MyParsingActivity.linkDao.insert(new Link(null, ""+parser.getValue(e, KEY_TITLE),
+                        ""+parser.getValue(e, KEY_DESC),
+                        ""+parser.getValue(e, KEY_LINK),
+                        ""+parser.getValue(e, KEY_DATE),
+                         rssID));
+                MyParsingActivity.db.setTransactionSuccessful();
+            } finally {
+                MyParsingActivity.db.endTransaction();
             }
-        });
-
-
-
-
-
-
-
+        }
     }
 
-    private void importBdd(){
-        dbImp = new MyDatabase(this);
-        dbImp.getReadableDatabase();
-        dbImp.close();
+    private void initList(){
+
+        listLink = new ArrayList<Link>();
+        if (cursor.moveToFirst()) {
+            do {
+                listLink.add(MyParsingActivity.linkDao.load((long) cursor.getInt(0)));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+    }
+
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     @Override
@@ -167,6 +154,8 @@ public class MyParsingActivity extends ListActivity {
         db.close();
         super.onDestroy();
     }
+
+
 
 
 
