@@ -35,10 +35,10 @@ public class XMLParser {
 			// Mofification (UTF-8)
 
 			DefaultHttpClient httpClient = new DefaultHttpClient();
-			HttpPost httpPost = new HttpPost(url);
+			HttpPost          httpPost   = new HttpPost(url);
 
 			HttpResponse httpResponse = httpClient.execute(httpPost);
-			HttpEntity httpEntity = httpResponse.getEntity();
+			HttpEntity   httpEntity     = httpResponse.getEntity();
 
             xml = EntityUtils.toString(httpEntity, HTTP.UTF_8);
 
